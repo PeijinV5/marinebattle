@@ -5,11 +5,11 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
 
-public class Bucket extends Rectangle {
+public class Bucket extends Moveable {
     private static final Texture image=new Texture(Gdx.files.internal("bucket.png"));
     private final int windowWidth;
-    private final int speed=200;
     public Bucket(int windowWidth) {
+        super(200);
         this.windowWidth = windowWidth;
 
         this.x = windowWidth / 2 - 64 / 2;
@@ -25,11 +25,12 @@ public class Bucket extends Rectangle {
         if(this.x < 0) this.x=0;
         if(this.x > this.windowWidth-this.width) this.x=this.windowWidth-this.width;
     }
-    public void moveLeft(float deltaTime) {
-        this.x -= speed * deltaTime;
-    }
-    public void moveRight(float deltaTime){
-        this.x += speed * deltaTime;
-    }
 
+    @Override
+    public void moveUp(float deltaTime) {
+    }
+    
+    @Override
+    public void moveDown(float deltaTime) {
+    }
 }

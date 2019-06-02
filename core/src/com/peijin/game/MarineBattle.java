@@ -91,7 +91,8 @@ public class MarineBattle extends ApplicationAdapter {
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.LEFT)) bucket.moveLeft(Gdx.graphics.getDeltaTime());
 		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.moveRight(Gdx.graphics.getDeltaTime());
-
+		if(Gdx.input.isKeyPressed(Input.Keys.UP)) bucket.moveUp(Gdx.graphics.getDeltaTime());
+		if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) bucket.moveDown(Gdx.graphics.getDeltaTime());
 		// make sure the bucket stays within the screen bounds
 		bucket.ensureInScreen();
 
