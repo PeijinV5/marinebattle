@@ -6,7 +6,7 @@ import com.peijin.game.MarineBattle;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {
-		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
+		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration(); // this is the class for config.
 		cfg.title = "Submarine Battle";
 		cfg.height = 480;
 		cfg.width = 800;
