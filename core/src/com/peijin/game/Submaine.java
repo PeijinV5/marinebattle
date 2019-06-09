@@ -28,4 +28,6 @@ public class Submaine extends Moveable {
         }
     }
 
+    public void remove() {this.x = -100;}
+
 }

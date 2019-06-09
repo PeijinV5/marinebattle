@@ -25,7 +25,7 @@ public class MarineBattle extends ApplicationAdapter {
 	private OrthographicCamera camera;
 	private SpriteBatch batch;
 	private Bucket bucket;
-	private Array<Droplet> raindrops;
+	private Droplet raindrop;
 	private Submaine submaine;
 	private Sky sky;
 	private Sea sea;
@@ -51,23 +51,23 @@ public class MarineBattle extends ApplicationAdapter {
 		rainMusic.setLooping(true);
 		rainMusic.play();
 
+		int skyHeight = 120;
+		int seaHeight = WINDOW_HEIGHT - skyHeight;
+
 		batch = new SpriteBatch();
 		shapeRenderer = new ShapeRenderer();
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-		bucket = new Bucket(WINDOW_WIDTH);
-
-		raindrops = new Array<Droplet>();
-		spawnRaindrop();
-
-		int skyHeight = 120;
-		int seaHeight = WINDOW_HEIGHT - skyHeight;
 		sea = new Sea(WINDOW_WIDTH, seaHeight,0,0);
 		submaine = new Submaine(sea);
 		sky = new Sky(WINDOW_WIDTH, skyHeight, 360);
 
+		bucket = new Bucket(WINDOW_WIDTH);
+
+		raindrop = new Droplet(sea);
+		//spawnRaindrop();
 	}
 
 	@Override
@@ -90,14 +90,12 @@ public class MarineBattle extends ApplicationAdapter {
 
 		drawEnvironment();
 
-		// begin a new batch and draw the bucket and
-		// all drops
+		// begin a new batch and draw the bucket and raindrop
 		batch.begin();
 		batch.draw(Bucket.image(), bucket.x, bucket.y); //bucket.image() is a static reference
-		for(Droplet droplet : raindrops) {
-			batch.draw(Droplet.image(), droplet.x, droplet.y);
-		}
+
 		batch.draw(Submaine.image(), submaine.x, submaine.y, submaine.width, submaine.height);
+		batch.draw(Droplet.image(),raindrop.x, raindrop.y, raindrop.width,raindrop.height);
 		batch.end();
 
 		// process user input
@@ -111,29 +109,33 @@ public class MarineBattle extends ApplicationAdapter {
 		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)) bucket.moveRight(Gdx.graphics.getDeltaTime());
 		if(Gdx.input.isKeyPressed(Input.Keys.UP)) bucket.moveUp(Gdx.graphics.getDeltaTime());
 		if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) bucket.moveDown(Gdx.graphics.getDeltaTime());
+
+		if((Gdx.input.isKeyPressed(Input.Keys.SPACE)) && (raindrop.isReleased()==false)) {
+			raindrop.setIsReleased(true); // set it to released.
+			raindrop.movetobucket(bucket);
+		}
+
 		// make sure the bucket stays within the screen bounds
 		bucket.ensureInScreen();
 
 		// check if we need to create a new raindrop
-		if(TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
+		// if(TimeUtils.nanoTime() - lastDropTime > 1000000000) spawnRaindrop();
 
 		// move the raindrops, remove any that are beneath the bottom edge of
 		// the screen or that hit the bucket. In the latter case we play back
 		// a sound effect as well.
-		for (Iterator<Droplet> iter = raindrops.iterator(); iter.hasNext(); ) {
-			Droplet raindrop = iter.next();
+
+		if (raindrop.isReleased()==true) {
 			raindrop.moveDown(Gdx.graphics.getDeltaTime());
-
-			if(raindrop.isOutOfScreen()) iter.remove();
-			if(raindrop.overlaps(bucket)) {
-				dropSound.play();
-				iter.remove();
-			}
-
-			if(raindrop.overlaps(submaine)){
-				dropSound.play();
-			}
 		}
+
+		if(raindrop.isOutOfScreen()) raindrop.remove();
+
+		if(raindrop.overlaps(submaine)) {
+				dropSound.play();
+				submaine.remove();
+				raindrop.remove();
+			}
 
 		// move submaine(s)
 		submaine.moveLeft(Gdx.graphics.getDeltaTime());
@@ -152,11 +154,11 @@ public class MarineBattle extends ApplicationAdapter {
 		shapeRenderer.end();
 	}
 
-	private void spawnRaindrop() {
-		Droplet droplet = new Droplet(WINDOW_WIDTH,WINDOW_HEIGHT);
-		raindrops.add(droplet); //add a raindrop to raindrops list.
-		lastDropTime = TimeUtils.nanoTime();
-	}
+//	private void spawnRaindrop() {
+//		Droplet droplet = new Droplet(WINDOW_WIDTH,WINDOW_HEIGHT);
+//		raindrop.add(droplet); //add a raindrop to raindrops list.
+//		lastDropTime = TimeUtils.nanoTime();
+//	}
 
 	@Override
 	public void dispose () {
