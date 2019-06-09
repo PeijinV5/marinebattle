@@ -5,9 +5,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
@@ -16,8 +18,7 @@ import java.util.Iterator;
 
 public class MarineBattle extends ApplicationAdapter {
 
-	// define class level variable
-
+	// define class level variable: why we do this??
 
 	private Sound dropSound;
 	private Music rainMusic;
@@ -25,10 +26,16 @@ public class MarineBattle extends ApplicationAdapter {
 	private SpriteBatch batch;
 	private Bucket bucket;
 	private Array<Droplet> raindrops;
+	private Submaine submaine;
+	private Sky sky;
+	private Sea sea;
 	private long lastDropTime;
 
 	private final int WINDOW_WIDTH = 800;
 	private final int WINDOW_HEIGHT = 480;
+
+	private ShapeRenderer shapeRenderer;
+
 	@Override
 	public void create () {
 
@@ -45,6 +52,7 @@ public class MarineBattle extends ApplicationAdapter {
 		rainMusic.play();
 
 		batch = new SpriteBatch();
+		shapeRenderer = new ShapeRenderer();
 
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -53,6 +61,12 @@ public class MarineBattle extends ApplicationAdapter {
 
 		raindrops = new Array<Droplet>();
 		spawnRaindrop();
+
+		int skyHeight = 120;
+		int seaHeight = WINDOW_HEIGHT - skyHeight;
+		sea = new Sea(WINDOW_WIDTH, seaHeight,0,0);
+		submaine = new Submaine(sea);
+		sky = new Sky(WINDOW_WIDTH, skyHeight, 360);
 
 	}
 
@@ -72,14 +86,18 @@ public class MarineBattle extends ApplicationAdapter {
 		// tell the SpriteBatch to render in the
 		// coordinate system specified by the camera.
 		batch.setProjectionMatrix(camera.combined);
+		shapeRenderer.setProjectionMatrix(camera.combined);
+
+		drawEnvironment();
 
 		// begin a new batch and draw the bucket and
 		// all drops
 		batch.begin();
-		batch.draw(Bucket.image(), bucket.x, bucket.y);
+		batch.draw(Bucket.image(), bucket.x, bucket.y); //bucket.image() is a static reference
 		for(Droplet droplet : raindrops) {
 			batch.draw(Droplet.image(), droplet.x, droplet.y);
 		}
+		batch.draw(Submaine.image(), submaine.x, submaine.y, submaine.width, submaine.height);
 		batch.end();
 
 		// process user input
@@ -111,7 +129,27 @@ public class MarineBattle extends ApplicationAdapter {
 				dropSound.play();
 				iter.remove();
 			}
+
+			if(raindrop.overlaps(submaine)){
+				dropSound.play();
+			}
 		}
+
+		// move submaine(s)
+		submaine.moveLeft(Gdx.graphics.getDeltaTime());
+		submaine.loopBack();
+	}
+
+	private void drawEnvironment() {
+		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+		// draw sea
+		shapeRenderer.setColor(Color.BLUE);
+		shapeRenderer.rect(this.sea.x, this.sea.y, this.sea.width, this.sea.height);
+		// draw sky
+		shapeRenderer.setColor(Color.SKY);
+		shapeRenderer.rect(this.sky.x, this.sky.y, this.sky.width, this.sky.height);
+
+		shapeRenderer.end();
 	}
 
 	private void spawnRaindrop() {
